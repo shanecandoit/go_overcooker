@@ -61,7 +61,7 @@ A Supervisor dreams up policies. They can generate a random policy map.
 
 ## Plan
 
-V1 will just implement onion soup setups with multiple agents.
+Right now, we only implement onion soup setups with multiple agents.
 
 A basic environment looks like:
 
@@ -79,3 +79,9 @@ We see
 - an onion box O1
 - a chopping station C1
 - a delivery point D1
+
+## Current Implementation (v1)
+
+In the current version, agents perform random actions without learning mechanisms.
+The environment spawns random items every 5th step to create varied scenarios.
+This random item spawning serves as a simple training curriculum, exposing agents to different situations they might encounter.

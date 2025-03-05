@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand/v2"
+	"time"
+)
 
 func main() {
 	fmt.Println("Start")
@@ -11,6 +15,37 @@ func main() {
 	// Print the environment
 	fmt.Println("Environment:", env)
 	env.render()
+
+	// Create policies for agents
+	policyMap := NewPolicyMap(env)
+
+	// Run simulation for 20 steps
+	numSteps := 20
+	for step := 1; step <= numSteps; step++ {
+		// Gather actions for each agent based on their policies
+		actions_list := make([]int, len(env.Agents))
+		for i, agent := range env.Agents {
+			pos := Position{X: agent.X, Y: agent.Y}
+			policy := policyMap[pos]
+			actions_list[i] = policy.GetActionProba()
+		}
+
+		// Apply actions
+		env.Step(actions_list)
+
+		// every 5th step, spawn some items
+		if step%5 == 0 {
+			env.environmentSpawnRandomItemsForTraining()
+		}
+
+		// Display current state
+		fmt.Printf("\nStep %d:\n", step)
+		env.render()
+
+		// Optional: add a small delay to see each step
+		time.Sleep(500 * time.Millisecond)
+	}
+
 }
 
 // Agent is a person or a robot in the environment
@@ -55,6 +90,7 @@ type Item struct {
 
 const ItemOnionRaw = "o"
 const ItemOnionChopped = "p"
+const ItemSoup = "s"
 
 // Station is a place where agents can interact with items
 type Station struct {
@@ -219,6 +255,7 @@ func (env *Environment) Step(actions []int) {
 			env.getAgentAt(newX, newY) == nil {
 			agent.X, agent.Y = newX, newY
 		}
+
 	}
 }
 
@@ -237,6 +274,16 @@ func (env *Environment) handleInteraction(agent *Agent) {
 			// If agent has an onion, chop it
 			if agent.Inventory.Name == ItemOnionRaw {
 				agent.Inventory.Name = ItemOnionChopped
+			}
+		case StationStove:
+			// If agent has a chopped onion, cook it
+			if agent.Inventory.Name == ItemOnionChopped {
+				agent.Inventory.Name = ItemSoup
+			}
+		case StationDelivery:
+			// If agent has a cooked soup, deliver it
+			if agent.Inventory.Name == ItemSoup {
+				agent.Inventory = Item{} // Reset inventory
 			}
 		}
 		return
@@ -262,17 +309,74 @@ func (env *Environment) handleInteraction(agent *Agent) {
 	}
 }
 
+func (env *Environment) environmentSpawnRandomItemsForTraining() {
+
+	listOfEmptyPositions := []Position{}
+	for y := 0; y < env.Height+1; y++ {
+		for x := 0; x < env.Width+1; x++ {
+			if env.getAgentAt(x, y) == nil && env.getItemAt(x, y) == nil && env.getStationAt(x, y) == nil {
+				listOfEmptyPositions = append(listOfEmptyPositions, Position{X: x, Y: y})
+			}
+		}
+	}
+
+	// shuffle the listOfEmptyPositions
+	rand.Shuffle(len(listOfEmptyPositions), func(i, j int) {
+		listOfEmptyPositions[i], listOfEmptyPositions[j] = listOfEmptyPositions[j], listOfEmptyPositions[i]
+	})
+
+	// print the first 5 positions
+	fmt.Println("listOfEmptyPositions:", listOfEmptyPositions[:5])
+
+	// we spawn some items, not stations
+	// we want to learn to interact with things
+	//
+	// spawn a cooked soup
+	// spawn a burnt soup
+	// spawn a raw onion
+	// spawn a chopped onion
+	env.Items = append(env.Items, Item{Name: ItemSoup, X: listOfEmptyPositions[0].X, Y: listOfEmptyPositions[0].Y})
+	env.Items = append(env.Items, Item{Name: ItemOnionRaw, X: listOfEmptyPositions[1].X, Y: listOfEmptyPositions[1].Y})
+	env.Items = append(env.Items, Item{Name: ItemOnionChopped, X: listOfEmptyPositions[2].X, Y: listOfEmptyPositions[2].Y})
+
+}
+
 // Policy is a map of (discrete) actions to probabilities
 type Policy map[int]float32
+
+func NewPolicy() Policy {
+	equalProb := float32(1.0 / (Act_Interact + 1))
+	// 16.67% for each action
+	return Policy{
+		Act_None:     equalProb,
+		Act_North:    equalProb,
+		Act_South:    equalProb,
+		Act_East:     equalProb,
+		Act_West:     equalProb,
+		Act_Interact: equalProb,
+	}
+}
 
 // PolicyMap a map of actions at every location
 type PolicyMap map[Position]Policy
 
-// GetAction returns an action based on the policy
-func (p Policy) GetAction() int {
+// NewPolicyMap creates a new policy map
+func NewPolicyMap(env Environment) PolicyMap {
+	policyMap := PolicyMap{}
+	for y := 0; y < env.Height+1; y++ {
+		for x := 0; x < env.Width+1; x++ {
+			policyMap[Position{X: x, Y: y}] = NewPolicy()
+		}
+	}
+	return policyMap
+}
+
+// GetActionBest returns an action based on the policy
+func (p Policy) GetActionBest() int {
 	// Implementation that selects an action based on probabilities
 	// For now, just return the most probable action
 	bestAction := Act_None
+
 	bestProb := float32(0.0)
 	for action, prob := range p {
 		if prob > bestProb {
@@ -281,4 +385,20 @@ func (p Policy) GetAction() int {
 		}
 	}
 	return bestAction
+}
+
+// GetActionProba returns an action based on the policy
+func (p Policy) GetActionProba() int {
+	r := rand.Float32() // Random number between 0 and 1
+	cumulative := float32(0.0)
+
+	for action, prob := range p {
+		cumulative += prob
+		if r <= cumulative {
+			return action
+		}
+	}
+
+	// Fallback (should not reach here if probabilities sum to 1)
+	return Act_None
 }
