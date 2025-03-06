@@ -85,3 +85,18 @@ We see
 In the current version, agents perform random actions without learning mechanisms.
 The environment spawns random items every 5th step to create varied scenarios.
 This random item spawning serves as a simple training curriculum, exposing agents to different situations they might encounter.
+
+## Status
+
+Limited success
+After 1000 rounds of acting randomly we have this environment.
+We aren't learning from reward, but we are getting reward.
+
+    Environment: &{env-1 [{a1 7 5 {s 9 3}} {a2 0 1 {s 5 1}}] [{s 7 3} {o 0 3} {p 2 0}] [{O1 4 1} {C1 9 1} {S1 9 5} {D1 5 5}] 9 5 map[onion_chop:1 onion_cook:1 onion_get:1 soup_deliver:2]}
+    . . p. . . . . . .
+    a2. . . O1. . . . C1
+    . . . . . . . . . .
+    o. . . . . . s. .
+    . . . . . . . . . .
+    . . . . . D1. a1. S1
+    EventCountsmap: map[onion_chop:1 onion_cook:1 onion_get:1 soup_deliver:2]
