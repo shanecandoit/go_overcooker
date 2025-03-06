@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"math/rand/v2"
+	"math/rand"
 )
 
 // Environment is the world where agents interact
