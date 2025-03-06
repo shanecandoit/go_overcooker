@@ -117,6 +117,8 @@ func (env *Environment) Step(actions []int) (rewards []float32, done bool) {
 	// Apply actions for each agent
 	for i, action := range actions {
 		agent := &env.Agents[i]
+		reward := RewardStalling
+		// default to a small negative reward w RewardStalling
 
 		// Handle movement
 		newX, newY := agent.X, agent.Y
@@ -130,8 +132,7 @@ func (env *Environment) Step(actions []int) (rewards []float32, done bool) {
 		case Act_West:
 			newX--
 		case Act_Interact:
-			reward := env.handleInteraction(agent)
-			rewards[i] = reward
+			reward = env.handleInteraction(agent)
 		}
 
 		// Check if movement is valid
@@ -139,7 +140,12 @@ func (env *Environment) Step(actions []int) (rewards []float32, done bool) {
 			newY >= 0 && newY < env.Height+1 &&
 			env.getAgentAt(newX, newY) == nil {
 			agent.X, agent.Y = newX, newY
+		} else {
+			reward = RewardInvalidAction
 		}
+
+		// set rewards
+		rewards[i] = float32(reward)
 
 	}
 	return rewards, done
@@ -152,7 +158,7 @@ func (env *Environment) CheckEventCountsmap() {
 }
 
 // handleInteraction processes an agent's attempt to interact
-func (env *Environment) handleInteraction(agent *Agent) float32 {
+func (env *Environment) handleInteraction(agent *Agent) float64 {
 
 	// check env.EventCountsmap
 	env.CheckEventCountsmap()
@@ -191,7 +197,7 @@ func (env *Environment) handleInteraction(agent *Agent) float32 {
 				env.EventCountsmap["soup_deliver"]++
 			}
 		}
-		return float32(reward)
+		return reward
 	}
 
 	// Check if there's an item to pick up
@@ -214,7 +220,7 @@ func (env *Environment) handleInteraction(agent *Agent) float32 {
 		// 	env.Items = append(env.Items, droppedItem)
 		// 	agent.Inventory = Item{} // Reset inventory
 	}
-	return float32(reward)
+	return reward
 }
 
 func (env *Environment) environmentSpawnRandomItemsForTraining() {
@@ -297,6 +303,7 @@ const (
 	RewardOnionCook     = 0.7  // Successfully cooking a chopped onion
 	RewardDeliverSoup   = 1.0  // Delivering a finished soup
 	RewardInvalidAction = -0.1 // Small penalty for invalid actions
+	RewardStalling      = -0.1 // Small penalty for stalling
 
 	// Maybe not:
 	// RewardDrop       = 0.0  // Neutral for dropping items

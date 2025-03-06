@@ -89,14 +89,33 @@ This random item spawning serves as a simple training curriculum, exposing agent
 ## Status
 
 Limited success
-After 1000 rounds of acting randomly we have this environment.
-We aren't learning from reward, but we are getting reward.
+After 1000 rounds of asking the policy and updating it based on rewards we get
 
-    Environment: &{env-1 [{a1 7 5 {s 9 3}} {a2 0 1 {s 5 1}}] [{s 7 3} {o 0 3} {p 2 0}] [{O1 4 1} {C1 9 1} {S1 9 5} {D1 5 5}] 9 5 map[onion_chop:1 onion_cook:1 onion_get:1 soup_deliver:2]}
-    . . p. . . . . . .
-    a2. . . O1. . . . C1
+    Final Environment:
+    Environment: &{env-1 [{a1 9 4 {s 1 4}} {a2 3 3 {p 2 5}}] [{s 5 0} {o 8 5} {p 5 3}] [{O1 4 1} {C1 9 1} {S1 9 5} {D1 5 5}] 9 5 map[onion_chop:1 onion_cook:1 soup_deliver:2]}
+    . . . . . s. . . .
+    . . . . O1. . . . C1
     . . . . . . . . . .
-    o. . . . . . s. .
-    . . . . . . . . . .
-    . . . . . D1. a1. S1
-    EventCountsmap: map[onion_chop:1 onion_cook:1 onion_get:1 soup_deliver:2]
+    . . . a2. p. . . .
+    . . . . . . . . . a1
+    . . . . . D1. . oS1
+    EventCountsmap: map[onion_chop:1 onion_cook:1 soup_deliver:2]
+    Policy Map:
+    Policy at {0 0}: map[00:0.17 01:0.16 02:0.18 03:0.18 04:0.16 05:0.17]
+    Policy at {1 0}: map[00:0.17 01:0.16 02:0.18 03:0.16 04:0.16 05:0.17]
+    Policy at {2 0}: map[00:0.17 01:0.14 02:0.18 03:0.17 04:0.17 05:0.17]
+    Policy at {3 0}: map[00:0.17 01:0.16 02:0.17 03:0.17 04:0.17 05:0.16]
+    Policy at {4 0}: map[00:0.16 01:0.16 02:0.18 03:0.17 04:0.17 05:0.16]
+    Policy at {5 0}: map[00:0.16 01:0.16 02:0.18 03:0.17 04:0.17 05:0.17]
+    Policy at {6 0}: map[00:0.17 01:0.15 02:0.17 03:0.17 04:0.17 05:0.17]
+    Policy at {7 0}: map[00:0.17 01:0.16 02:0.18 03:0.17 04:0.17 05:0.17]
+    Policy at {8 0}: map[00:0.17 01:0.15 02:0.18 03:0.17 04:0.16 05:0.17]
+    Policy at {9 0}: map[00:0.17 01:0.16 02:0.17 03:0.15 04:0.17 05:0.17]
+    Policy at {0 1}: map[00:0.18 01:0.17 02:0.18 03:0.18 04:0.14 05:0.17]
+
+So the "do nothing" is baseline at .17 and only lower than that when
+the agent tries to illegally bump into the wall 0.16.
+
+Good step max out at 0.18 or 0.19 here.
+
+The next step is to reach into the future and update current based on avg of future?

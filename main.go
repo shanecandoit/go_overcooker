@@ -37,8 +37,20 @@ func main() {
 			break
 		}
 
-		// every 5th step, spawn some items
-		if step%5 == 0 {
+		// update policy based on rewards
+		for i, agent := range env.Agents {
+			agentAction := actions_list[i]
+			agentReward := rewards[i]
+			agentPos := Position{X: agent.X, Y: agent.Y}
+			agentPolicy := policyMap[agentPos]
+			agentPolicy = agentPolicy.Update(agentPos, agentAction, agentReward)
+
+			// update the policy map
+			policyMap[agentPos] = agentPolicy
+		}
+
+		// every 15th step, spawn some items
+		if step%15 == 0 {
 			env.environmentSpawnRandomItemsForTraining()
 		}
 
@@ -54,6 +66,16 @@ func main() {
 	fmt.Println("Final Environment:")
 	env.render()
 	fmt.Println("EventCountsmap:", env.EventCountsmap)
+
+	// Print the policy map
+	fmt.Println("Policy Map:")
+	for y := 0; y < env.Height+1; y++ {
+		for x := 0; x < env.Width+1; x++ {
+			pos := Position{X: x, Y: y}
+			policy := policyMap[pos]
+			fmt.Printf("Policy at %v: %2.2v\n", pos, policy)
+		}
+	}
 
 }
 
@@ -172,4 +194,77 @@ func (p Policy) GetActionProba() int {
 
 	// Fallback (should not reach here if probabilities sum to 1)
 	return Act_None
+}
+
+func (p Policy) Update(position Position, action int, reward float32) Policy {
+	// Update the policy based on the reward
+	// agentPolicy = agentPolicy.Update(agentPos, agentAction, agentReward)
+
+	// Create a copy of the policy to avoid modifying the original
+	newPolicy := make(Policy)
+	for a, prob := range p {
+		newPolicy[a] = prob
+	}
+
+	// Learning parameters
+	learningRate := float32(0.1) // How quickly to adapt to new rewards
+
+	// Skip update for zero rewards to avoid reinforcing neutral actions
+	if reward == 0 {
+		return newPolicy
+	}
+
+	// For positive rewards: increase probability of the taken action
+	// For negative rewards: decrease probability of the taken action
+
+	// Get current probability for the action
+	currentProb := newPolicy[action]
+
+	// Calculate the adjustment (scaled by learning rate)
+	// - For positive rewards: move probability toward 1.0
+	// - For negative rewards: move probability toward 0.0
+	var adjustment float32
+	if reward > 0 {
+		adjustment = learningRate * reward * (1.0 - currentProb)
+	} else {
+		adjustment = learningRate * reward * currentProb
+		// Ensure we don't go below zero
+		if currentProb+adjustment < 0.05 {
+			adjustment = 0.05 - currentProb
+		}
+	}
+
+	// Apply the adjustment
+	newPolicy[action] += adjustment
+
+	// Distribute the remaining probability mass among other actions
+	// to ensure probabilities still sum to 1.0
+	remainingProb := float32(1.0) - newPolicy[action]
+
+	// Calculate total probability of other actions before normalization
+	totalOtherProb := float32(0.0)
+	for a := range newPolicy {
+		if a != action {
+			totalOtherProb += newPolicy[a]
+		}
+	}
+
+	// Normalize other probabilities
+	if totalOtherProb > 0 {
+		for a := range newPolicy {
+			if a != action {
+				newPolicy[a] = newPolicy[a] * remainingProb / totalOtherProb
+			}
+		}
+	} else {
+		// If all other probabilities were 0, distribute evenly
+		equalShare := remainingProb / float32(len(newPolicy)-1)
+		for a := range newPolicy {
+			if a != action {
+				newPolicy[a] = equalShare
+			}
+		}
+	}
+
+	return newPolicy
 }
