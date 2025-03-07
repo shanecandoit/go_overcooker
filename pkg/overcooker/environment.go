@@ -1,4 +1,4 @@
-package main
+package overcooker
 
 import (
 	"fmt"
@@ -18,6 +18,61 @@ type Environment struct {
 	// map of event counts, like achievements
 	// maybe just for debugging
 	EventCountsmap map[string]int
+}
+
+func SimpleEnvironment() Environment {
+	// a simple environment with 2 agents
+	env := Environment{
+		Name: "env-1",
+		Agents: []Agent{
+			Agent{Name: "a1", X: 1, Y: 1},
+			Agent{Name: "a2", X: 1, Y: 4},
+		},
+	}
+
+	// a box of onions
+	env.Items = append(env.Items, Item{Name: ItemOnionRaw + "1", X: 2, Y: 4})
+	env.Items = append(env.Items, Item{Name: ItemOnionRaw + "2", X: 4, Y: 2})
+
+	// a box of onions
+	env.Stations = append(env.Stations, Station{Name: StationOnion + "1", X: 4, Y: 1})
+	// a chopping station
+	env.Stations = append(env.Stations, Station{Name: StationChop + "1", X: 9, Y: 1})
+	// a cooking station
+	env.Stations = append(env.Stations, Station{Name: StationStove + "1", X: 9, Y: 5})
+
+	// a delivery serving station
+	env.Stations = append(env.Stations, Station{Name: StationDelivery + "1", X: 5, Y: 5})
+
+	// set the width and height of the environment
+	env.Width = 5  // min width
+	env.Height = 5 // min height
+	for _, agent := range env.Agents {
+		if agent.X > env.Width {
+			env.Width = agent.X
+		}
+		if agent.Y > env.Height {
+			env.Height = agent.Y
+		}
+	}
+	for _, ressource := range env.Items {
+		if ressource.X > env.Width {
+			env.Width = ressource.X
+		}
+		if ressource.Y > env.Height {
+			env.Height = ressource.Y
+		}
+	}
+	for _, station := range env.Stations {
+		if station.X > env.Width {
+			env.Width = station.X
+		}
+		if station.Y > env.Height {
+			env.Height = station.Y
+		}
+	}
+
+	return env
 }
 
 // Item is a generic object in the environment
@@ -77,7 +132,8 @@ func (env *Environment) getStationAt(x, y int) *Station {
 	return nil
 }
 
-func (env *Environment) render() {
+// Render displays the environment in the console
+func (env *Environment) Render() {
 	// each object may take 2 characters
 
 	fmt.Println("Environment:", env)
@@ -223,7 +279,7 @@ func (env *Environment) handleInteraction(agent *Agent) float64 {
 	return reward
 }
 
-func (env *Environment) environmentSpawnRandomItemsForTraining() {
+func (env *Environment) EnvironmentSpawnRandomItemsForTraining() {
 
 	// clean up junk
 	env.Items = []Item{}

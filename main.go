@@ -2,29 +2,33 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
+
+	// ov "github.com/shanecandoit/go_overcooker"
+	ov "github.com/shanecandoit/go_overcooker/pkg/overcooker"
 )
 
 func main() {
 	fmt.Println("Start")
 
 	// Create a new environment
-	env := SimpleEnvironment()
+	env := ov.SimpleEnvironment()
 
 	// Print the environment
 	fmt.Println("Environment:", env)
-	env.render()
+	env.Render()
 
 	// Create policies for agents
-	policyMap := NewPolicyMap(env)
+	policyMap := ov.NewPolicyMap(env)
 
 	// Run simulation for N steps
-	numSteps := 1000
+	numSteps := 1000 * 5
 	for step := 1; step <= numSteps; step++ {
 		// Gather actions for each agent based on their policies
 		actions_list := make([]int, len(env.Agents))
+		prevPos := make([]ov.Position, len(env.Agents))
 		for i, agent := range env.Agents {
-			pos := Position{X: agent.X, Y: agent.Y}
+			pos := ov.Position{X: agent.X, Y: agent.Y}
+			prevPos[i] = pos
 			policy := policyMap[pos]
 			actions_list[i] = policy.GetActionProba()
 		}
@@ -41,37 +45,59 @@ func main() {
 		for i, agent := range env.Agents {
 			agentAction := actions_list[i]
 			agentReward := rewards[i]
-			agentPos := Position{X: agent.X, Y: agent.Y}
+			agentPos := ov.Position{X: agent.X, Y: agent.Y}
+
+			// Update current position policy
 			agentPolicy := policyMap[agentPos]
 			agentPolicy = agentPolicy.Update(agentPos, agentAction, agentReward)
-
-			// update the policy map
 			policyMap[agentPos] = agentPolicy
+
+			// Check if agent moved (position changed)
+			if prevPos[i].X != agentPos.X || prevPos[i].Y != agentPos.Y {
+				prevDeducedAction := whichAction(prevPos[i], agentPos)
+
+				// Get previous position's policy
+				prevPolicy := policyMap[prevPos[i]]
+
+				// Calculate a discounted reward for the previous action
+				// This creates a smooth reward gradient that flows backward
+				discountFactor := float32(0.5) // Adjustable parameter
+				discountedReward := agentReward * discountFactor
+
+				// Only backpropagate positive rewards to encourage positive behavior chains
+				// If we didn't move or the reward is negative, don't update the policy
+				if prevDeducedAction != ov.Act_None && discountedReward > 0 {
+					prevPolicy = prevPolicy.Update(prevPos[i], prevDeducedAction, discountedReward)
+					policyMap[prevPos[i]] = prevPolicy
+				}
+			}
 		}
 
+		// early on, spawn some items
 		// every 15th step, spawn some items
-		if step%15 == 0 {
-			env.environmentSpawnRandomItemsForTraining()
+		if step < 1000 && step%15 == 0 {
+			env.EnvironmentSpawnRandomItemsForTraining()
 		}
 
 		// Display current state
 		fmt.Printf("\nStep %d:\n", step)
-		env.render()
+		env.Render()
 
 		// Optional: add a small delay to see each step
 		// time.Sleep(500 * time.Millisecond)
 	}
 
 	// Print the environment
+	fmt.Println("Number of steps:", numSteps)
 	fmt.Println("Final Environment:")
-	env.render()
+	env.Render()
 	fmt.Println("EventCountsmap:", env.EventCountsmap)
 
 	// Print the policy map
 	fmt.Println("Policy Map:")
 	for y := 0; y < env.Height+1; y++ {
 		for x := 0; x < env.Width+1; x++ {
-			pos := Position{X: x, Y: y}
+			pos := ov.Position{X: x, Y: y}
 			policy := policyMap[pos]
 			fmt.Printf("Policy at %v: %2.2v\n", pos, policy)
 		}
@@ -79,192 +105,65 @@ func main() {
 
 }
 
-func SimpleEnvironment() Environment {
-	// a simple environment with 2 agents
-	env := Environment{
-		Name: "env-1",
-		Agents: []Agent{
-			Agent{Name: "a1", X: 1, Y: 1},
-			Agent{Name: "a2", X: 1, Y: 4},
-		},
-	}
-
-	// a box of onions
-	env.Items = append(env.Items, Item{Name: ItemOnionRaw + "1", X: 2, Y: 4})
-	env.Items = append(env.Items, Item{Name: ItemOnionRaw + "2", X: 4, Y: 2})
-
-	// a box of onions
-	env.Stations = append(env.Stations, Station{Name: StationOnion + "1", X: 4, Y: 1})
-	// a chopping station
-	env.Stations = append(env.Stations, Station{Name: StationChop + "1", X: 9, Y: 1})
-	// a cooking station
-	env.Stations = append(env.Stations, Station{Name: StationStove + "1", X: 9, Y: 5})
-
-	// a delivery serving station
-	env.Stations = append(env.Stations, Station{Name: StationDelivery + "1", X: 5, Y: 5})
-
-	// set the width and height of the environment
-	env.Width = 5  // min width
-	env.Height = 5 // min height
-	for _, agent := range env.Agents {
-		if agent.X > env.Width {
-			env.Width = agent.X
+func whichAction(prevPos, newPos ov.Position) int {
+	if prevPos.X == newPos.X {
+		if prevPos.Y > newPos.Y {
+			return ov.Act_North
+		} else {
+			return ov.Act_South
 		}
-		if agent.Y > env.Height {
-			env.Height = agent.Y
+	} else {
+		if prevPos.X > newPos.X {
+			return ov.Act_West
+		} else {
+			return ov.Act_East
 		}
 	}
-	for _, ressource := range env.Items {
-		if ressource.X > env.Width {
-			env.Width = ressource.X
-		}
-		if ressource.Y > env.Height {
-			env.Height = ressource.Y
-		}
-	}
-	for _, station := range env.Stations {
-		if station.X > env.Width {
-			env.Width = station.X
-		}
-		if station.Y > env.Height {
-			env.Height = station.Y
-		}
-	}
-
-	return env
+	return ov.Act_None
 }
 
 // Policy is a map of (discrete) actions to probabilities
-type Policy map[int]float32
+// type Policy map[int]float32
 
-func NewPolicy() Policy {
-	equalProb := float32(1.0 / (Act_Interact + 1))
-	// 16.67% for each action
-	return Policy{
-		Act_None:     equalProb,
-		Act_North:    equalProb,
-		Act_South:    equalProb,
-		Act_East:     equalProb,
-		Act_West:     equalProb,
-		Act_Interact: equalProb,
-	}
-}
+// func NewPolicy() Policy {
+// 	equalProb := float32(1.0 / (ov.Act_Interact + 1))
+// 	// 16.67% for each action
+// 	return Policy{
+// 		ov.Act_None:     equalProb,
+// 		ov.Act_North:    equalProb,
+// 		ov.Act_South:    equalProb,
+// 		ov.Act_East:     equalProb,
+// 		ov.Act_West:     equalProb,
+// 		ov.Act_Interact: equalProb,
+// 	}
+// }
 
-// PolicyMap a map of actions at every location
-type PolicyMap map[Position]Policy
+// // PolicyMap a map of actions at every location
+// type PolicyMap map[ov.Position]Policy
 
-// NewPolicyMap creates a new policy map
-func NewPolicyMap(env Environment) PolicyMap {
-	policyMap := PolicyMap{}
-	for y := 0; y < env.Height+1; y++ {
-		for x := 0; x < env.Width+1; x++ {
-			policyMap[Position{X: x, Y: y}] = NewPolicy()
-		}
-	}
-	return policyMap
-}
+// // NewPolicyMap creates a new policy map
+// func NewPolicyMap(env ov.Environment) PolicyMap {
+// 	policyMap := PolicyMap{}
+// 	for y := 0; y < env.Height+1; y++ {
+// 		for x := 0; x < env.Width+1; x++ {
+// 			policyMap[ov.Position{X: x, Y: y}] = NewPolicy()
+// 		}
+// 	}
+// 	return policyMap
+// }
 
-// GetActionBest returns an action based on the policy
-func (p Policy) GetActionBest() int {
-	// Implementation that selects an action based on probabilities
-	// For now, just return the most probable action
-	bestAction := Act_None
+// // GetActionBest returns an action based on the policy
+// func (p ov.Policy) GetActionBest() int {
+// 	// Implementation that selects an action based on probabilities
+// 	// For now, just return the most probable action
+// 	bestAction := ov.Act_None
 
-	bestProb := float32(0.0)
-	for action, prob := range p {
-		if prob > bestProb {
-			bestProb = prob
-			bestAction = action
-		}
-	}
-	return bestAction
-}
-
-// GetActionProba returns an action based on the policy
-func (p Policy) GetActionProba() int {
-	r := rand.Float32() // Random number between 0 and 1
-	cumulative := float32(0.0)
-
-	for action, prob := range p {
-		cumulative += prob
-		if r <= cumulative {
-			return action
-		}
-	}
-
-	// Fallback (should not reach here if probabilities sum to 1)
-	return Act_None
-}
-
-func (p Policy) Update(position Position, action int, reward float32) Policy {
-	// Update the policy based on the reward
-	// agentPolicy = agentPolicy.Update(agentPos, agentAction, agentReward)
-
-	// Create a copy of the policy to avoid modifying the original
-	newPolicy := make(Policy)
-	for a, prob := range p {
-		newPolicy[a] = prob
-	}
-
-	// Learning parameters
-	learningRate := float32(0.1) // How quickly to adapt to new rewards
-
-	// Skip update for zero rewards to avoid reinforcing neutral actions
-	if reward == 0 {
-		return newPolicy
-	}
-
-	// For positive rewards: increase probability of the taken action
-	// For negative rewards: decrease probability of the taken action
-
-	// Get current probability for the action
-	currentProb := newPolicy[action]
-
-	// Calculate the adjustment (scaled by learning rate)
-	// - For positive rewards: move probability toward 1.0
-	// - For negative rewards: move probability toward 0.0
-	var adjustment float32
-	if reward > 0 {
-		adjustment = learningRate * reward * (1.0 - currentProb)
-	} else {
-		adjustment = learningRate * reward * currentProb
-		// Ensure we don't go below zero
-		if currentProb+adjustment < 0.05 {
-			adjustment = 0.05 - currentProb
-		}
-	}
-
-	// Apply the adjustment
-	newPolicy[action] += adjustment
-
-	// Distribute the remaining probability mass among other actions
-	// to ensure probabilities still sum to 1.0
-	remainingProb := float32(1.0) - newPolicy[action]
-
-	// Calculate total probability of other actions before normalization
-	totalOtherProb := float32(0.0)
-	for a := range newPolicy {
-		if a != action {
-			totalOtherProb += newPolicy[a]
-		}
-	}
-
-	// Normalize other probabilities
-	if totalOtherProb > 0 {
-		for a := range newPolicy {
-			if a != action {
-				newPolicy[a] = newPolicy[a] * remainingProb / totalOtherProb
-			}
-		}
-	} else {
-		// If all other probabilities were 0, distribute evenly
-		equalShare := remainingProb / float32(len(newPolicy)-1)
-		for a := range newPolicy {
-			if a != action {
-				newPolicy[a] = equalShare
-			}
-		}
-	}
-
-	return newPolicy
-}
+// 	bestProb := float32(0.0)
+// 	for action, prob := range p {
+// 		if prob > bestProb {
+// 			bestProb = prob
+// 			bestAction = action
+// 		}
+// 	}
+// 	return bestAction
+// }

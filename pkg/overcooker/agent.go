@@ -1,4 +1,4 @@
-package main
+package overcooker
 
 // Agent is a person or a robot in the environment
 type Agent struct {
