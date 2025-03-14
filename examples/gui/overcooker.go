@@ -13,12 +13,18 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
-// TODO draw using these art assets:
+// Graphics assets:
+// Items
 // overcooker/examples/gui/art/onion_chopped_64x64.png
 // overcooker/examples/gui/art/onion_raw_64x64.png
+// Stations
+// overcooker/examples/gui/art/station_onion_64x64.png
 // overcooker/examples/gui/art/station_chop_64x64.png
 // overcooker/examples/gui/art/station_cook_64x64.png
 // overcooker/examples/gui/art/station_serve_64x64.png
+// Agents
+// overcooker/examples/gui/art/chef-1_64x64.png
+// overcooker/examples/gui/art/chef-2_64x64.png
 
 // Game implements ebiten.Game interface.
 type Game struct {
@@ -27,6 +33,7 @@ type Game struct {
 	// Create policies for agents
 	PolicyMap map[ov.Position]ov.Policy
 	Images    map[string]*ebiten.Image
+	MaxSteps  int
 }
 
 // Update proceeds the game state.
@@ -34,7 +41,6 @@ type Game struct {
 func (g *Game) Update() error {
 
 	env := g.Environment
-	step := g.Step
 
 	// Gather actions for each agent based on their policies
 	actions_list := make([]int, len(env.Agents))
@@ -88,15 +94,20 @@ func (g *Game) Update() error {
 
 	// early on, spawn some items
 	// every 15th step, spawn some items
-	if step < 1000 && step%15 == 0 {
+	if g.Step < 1000 && g.Step%15 == 0 {
 		env.EnvironmentSpawnRandomItemsForTraining()
 	}
 
 	// Display current state
-	fmt.Printf("\nStep %d:\n", step)
+	fmt.Printf("\nStep %d:\n", g.Step)
 	env.Render()
 
 	g.Step++
+
+	// done?
+	if g.MaxSteps > 0 && g.Step > g.MaxSteps {
+		return fmt.Errorf("Max steps reached")
+	}
 
 	return nil
 }
@@ -166,14 +177,47 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	// Draw the agents
-	for _, agent := range g.Environment.Agents {
+	for i, agent := range g.Environment.Agents {
 		x := agent.X
 		y := agent.Y
-		ebitenutil.DebugPrintAt(screen, "A", x*64, y*64)
+		// ebitenutil.DebugPrintAt(screen, "A", x*64, y*64)
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(float64(x*64), float64(y*64))
+		switch i {
+		case 0:
+			screen.DrawImage(g.Images["chef-1_64x64.png"], op)
+		case 1:
+			screen.DrawImage(g.Images["chef-2_64x64.png"], op)
+		}
 	}
 
+	// Display total reward
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Total Reward: %.2f", g.Environment.TotalReward), 0, 0)
+
 	// draw the step number
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Step: %d", g.Step), 0, 0)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Step: %d", g.Step), 0, 20)
+	// draw number of things that happened
+	eventCounts := g.Environment.EventCountsmap
+	if eventCounts == nil {
+		eventCounts = make(map[string]int)
+	}
+	onionGetCount := eventCounts["onion_get"]
+	if onionGetCount > 0 {
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Onion Get: %d", onionGetCount), 0, 40)
+	}
+	onionChopCount := eventCounts["onion_chop"]
+	if onionChopCount > 0 {
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Onion Chop: %d", onionChopCount), 0, 60)
+	}
+	onionCookCount := eventCounts["onion_cook"]
+	if onionCookCount > 0 {
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Onion Cook: %d", onionCookCount), 0, 80)
+	}
+	soupDeliverCount := eventCounts["soup_deliver"]
+	if soupDeliverCount > 0 {
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Soup Deliver: %d", soupDeliverCount), 0, 100)
+	}
+
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
@@ -186,12 +230,17 @@ func (g *Game) loadImages() error {
 	g.Images = make(map[string]*ebiten.Image)
 
 	imagePaths := []string{
+		// items
 		"examples/gui/art/onion_chopped_64x64.png",
 		"examples/gui/art/onion_raw_64x64.png",
+		// stations
 		"examples/gui/art/station_chop_64x64.png",
 		"examples/gui/art/station_cook_64x64.png",
 		"examples/gui/art/station_serve_64x64.png",
 		"examples/gui/art/station_onion_64x64.png",
+		// agents
+		"examples/gui/art/chef-1_64x64.png",
+		"examples/gui/art/chef-2_64x64.png",
 	}
 
 	for _, path := range imagePaths {
@@ -222,6 +271,7 @@ func main() {
 
 	env := game.Environment
 	game.Step = 1
+	game.MaxSteps = 1000
 
 	game.PolicyMap = ov.NewPolicyMap(env)
 

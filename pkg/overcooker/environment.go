@@ -18,6 +18,8 @@ type Environment struct {
 	// map of event counts, like achievements
 	// maybe just for debugging
 	EventCountsmap map[string]int
+
+	TotalReward float64
 }
 
 func SimpleEnvironment() Environment {
@@ -25,8 +27,8 @@ func SimpleEnvironment() Environment {
 	env := Environment{
 		Name: "env-1",
 		Agents: []Agent{
-			Agent{Name: "a1", X: 1, Y: 1},
-			Agent{Name: "a2", X: 1, Y: 4},
+			{Name: "a1", X: 1, Y: 1},
+			{Name: "a2", X: 1, Y: 4},
 		},
 	}
 
@@ -203,6 +205,7 @@ func (env *Environment) Step(actions []int) (rewards []float32, done bool) {
 		// set rewards
 		rewards[i] = float32(reward)
 
+		env.TotalReward += float64(reward)
 	}
 	return rewards, done
 }
