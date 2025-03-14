@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+
+<!-- Background -->
+  <rect x="0" y="0" width="400" height="300" fill="none" />
+  <!-- Wooden Chopping Board - rectangular with rounded corners -->
+  <rect x="50" y="70" width="260" height="180" rx="8" ry="8" fill="#b38c5c" stroke="#8c6840" stroke-width="3" />
+  <!-- Wood grain on chopping board -->
+  <path d="M70 80 Q90 120, 70 240" stroke="#9a7848" stroke-width="1.5" fill="none" />
+  <path d="M100 80 Q120 130, 100 240" stroke="#9a7848" stroke-width="1.5" fill="none" />
+  <path d="M140 80 Q160 140, 140 240" stroke="#9a7848" stroke-width="1.5" fill="none" />
+  <path d="M180 80 Q200 125, 180 240" stroke="#9a7848" stroke-width="1.5" fill="none" />
+  <path d="M220 80 Q240 135, 220 240" stroke="#9a7848" stroke-width="1.5" fill="none" />
+  <path d="M260 80 Q280 115, 260 240" stroke="#9a7848" stroke-width="1.5" fill="none" />
+  <!-- Darker areas/stains from use -->
+  <ellipse cx="120" cy="160" rx="20" ry="15" fill="#9a7848" fill-opacity="0.3" />
+  <ellipse cx="220" cy="130" rx="25" ry="20" fill="#9a7848" fill-opacity="0.3" />
+  <!-- Wide Chef's Knife / Cleaver -->
+  <g transform="translate(340, 150) rotate(25)">
+    <!-- Wide Knife Blade -->
+    <path d="M-20 -70 L50 -70 L45 30 L-25 30 Z" fill="#e8e8e8" stroke="#a0a0a0" stroke-width="2" />
+
+<!-- Knife Edge -->
+<line x1="50" y1="-70" x2="45" y2="30" stroke="#909090" stroke-width="1.5" />
+
+<!-- Knife Spine -->
+<line x1="-20" y1="-70" x2="-25" y2="30" stroke="#c0c0c0" stroke-width="1" />
+
+<!-- Knife Handle -->
+<rect x="-25" y="30" width="70" height="20" rx="5" ry="5" fill="#4a3222" stroke="#2a1e14" stroke-width="2" />
+
+<!-- Handle Detail -->
+<rect x="-15" y="35" width="50" height="10" rx="3" ry="3" fill="#3a281a" stroke="none" />
+
+<!-- Hole in knife blade for hanging -->
+<circle cx="15" cy="-50" r="6" fill="none" stroke="#a0a0a0" stroke-width="1.5" />
+
+</g>
+  <!-- Cutting marks on board -->
+  <line x1="110" y1="110" x2="170" y2="170" stroke="#8c6840" stroke-width="1.5" />
+  <line x1="180" y1="110" x2="120" y2="170" stroke="#8c6840" stroke-width="1.5" />
+  <line x1="200" y1="150" x2="240" y2="190" stroke="#8c6840" stroke-width="1.5" />
+  <line x1="150" y1="200" x2="200" y2="220" stroke="#8c6840" stroke-width="1.5" />
+</svg>

@@ -105,7 +105,7 @@ const StationChop = "C"     // Station for chopping onions
 const StationStove = "S"    // Station for stove
 const StationDelivery = "D" // Station for delivery
 
-func (env *Environment) getAgentAt(x, y int) *Agent {
+func (env *Environment) GetAgentAt(x, y int) *Agent {
 	for i := range env.Agents {
 		if env.Agents[i].X == x && env.Agents[i].Y == y {
 			return &env.Agents[i] // Returns pointer to actual agent
@@ -114,7 +114,7 @@ func (env *Environment) getAgentAt(x, y int) *Agent {
 	return nil
 }
 
-func (env *Environment) getItemAt(x, y int) *Item {
+func (env *Environment) GetItemAt(x, y int) *Item {
 	for i := range env.Items {
 		if env.Items[i].X == x && env.Items[i].Y == y {
 			return &env.Items[i]
@@ -123,7 +123,7 @@ func (env *Environment) getItemAt(x, y int) *Item {
 	return nil
 }
 
-func (env *Environment) getStationAt(x, y int) *Station {
+func (env *Environment) GetStationAt(x, y int) *Station {
 	for i := range env.Stations {
 		if env.Stations[i].X == x && env.Stations[i].Y == y {
 			return &env.Stations[i]
@@ -141,9 +141,9 @@ func (env *Environment) Render() {
 	maxX := env.Width + 1
 	for y := 0; y < maxY; y++ {
 		for x := 0; x < maxX; x++ {
-			agent := env.getAgentAt(x, y)
-			resource := env.getItemAt(x, y)
-			station := env.getStationAt(x, y)
+			agent := env.GetAgentAt(x, y)
+			resource := env.GetItemAt(x, y)
+			station := env.GetStationAt(x, y)
 			if agent != nil {
 				fmt.Print(agent.Name)
 			} else if resource != nil {
@@ -194,7 +194,7 @@ func (env *Environment) Step(actions []int) (rewards []float32, done bool) {
 		// Check if movement is valid
 		if newX >= 0 && newX < env.Width+1 &&
 			newY >= 0 && newY < env.Height+1 &&
-			env.getAgentAt(newX, newY) == nil {
+			env.GetAgentAt(newX, newY) == nil {
 			agent.X, agent.Y = newX, newY
 		} else {
 			reward = RewardInvalidAction
@@ -220,7 +220,7 @@ func (env *Environment) handleInteraction(agent *Agent) float64 {
 	env.CheckEventCountsmap()
 
 	// Check if agent is at a station
-	station := env.getStationAt(agent.X, agent.Y)
+	station := env.GetStationAt(agent.X, agent.Y)
 	reward := RewardInvalidAction
 	if station != nil {
 		switch station.Name[0:1] {
@@ -257,7 +257,7 @@ func (env *Environment) handleInteraction(agent *Agent) float64 {
 	}
 
 	// Check if there's an item to pick up
-	item := env.getItemAt(agent.X, agent.Y)
+	item := env.GetItemAt(agent.X, agent.Y)
 	if item != nil && agent.Inventory.Name == "" {
 		agent.Inventory = *item
 		// Remove the item from the environment
@@ -317,7 +317,7 @@ func (env *Environment) EnvironmentSpawnRandomItemsForTraining() {
 	listOfEmptyPositions := []Position{}
 	for y := 0; y < env.Height+1; y++ {
 		for x := 0; x < env.Width+1; x++ {
-			if env.getAgentAt(x, y) == nil && env.getItemAt(x, y) == nil && env.getStationAt(x, y) == nil {
+			if env.GetAgentAt(x, y) == nil && env.GetItemAt(x, y) == nil && env.GetStationAt(x, y) == nil {
 				listOfEmptyPositions = append(listOfEmptyPositions, Position{X: x, Y: y})
 			}
 		}

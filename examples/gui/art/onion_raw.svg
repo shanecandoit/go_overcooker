@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background shape - main onion body -->
+  <ellipse cx="100" cy="110" rx="65" ry="55" fill="#e0cee0" />
+  
+  <!-- Outer layer -->
+  <path d="M100 55 
+           C130 65, 160 90, 165 120
+           C170 150, 130 175, 100 180
+           C70 175, 30 150, 35 120
+           C40 90, 70 65, 100 55Z" 
+        fill="#d4b8d4" stroke="#b094b0" stroke-width="2" />
+  
+  <!-- Middle layer -->
+  <path d="M100 65
+           C125 75, 145 95, 150 115
+           C155 140, 125 160, 100 165
+           C75 160, 45 140, 50 115
+           C55 95, 75 75, 100 65Z"
+        fill="#c8a4c8" stroke="#b094b0" stroke-width="1.5" />
+  
+  <!-- Inner layer -->
+  <path d="M100 75
+           C120 82, 135 100, 138 115
+           C142 130, 120 145, 100 150
+           C80 145, 58 130, 62 115
+           C65 100, 80 82, 100 75Z"
+        fill="#bb92bb" stroke="#b094b0" stroke-width="1" />
+  
+  <!-- Center core -->
+  <ellipse cx="100" cy="115" rx="25" ry="20" fill="#ae82ae" />
+  
+  <!-- Roots at the bottom -->
+  <path d="M85 155 C80 165, 75 175, 70 185" stroke="#b094b0" stroke-width="3" fill="none" />
+  <path d="M100 160 C100 170, 100 180, 100 190" stroke="#b094b0" stroke-width="3" fill="none" />
+  <path d="M115 155 C120 165, 125 175, 130 185" stroke="#b094b0" stroke-width="3" fill="none" />
+  
+  <!-- Top stem part -->
+  <path d="M95 55 C95 40, 95 30, 95 20" stroke="#86a36e" stroke-width="4" fill="none" />
+  <path d="M105 55 C105 40, 105 30, 105 20" stroke="#86a36e" stroke-width="4" fill="none" />
+  
+  <!-- Stem leaves -->
+  <path d="M95 35 C85 30, 75 32, 70 35" stroke="#86a36e" stroke-width="3" fill="none" />
+  <path d="M105 30 C115 25, 125 27, 130 30" stroke="#86a36e" stroke-width="3" fill="none" />
+  
+  <!-- Highlights for 3D effect -->
+  <ellipse cx="85" cy="100" rx="15" ry="10" fill="#e8d8e8" fill-opacity="0.4" />
+</svg>
