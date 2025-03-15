@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="200mm"
+   height="200mm"
+   viewBox="0 0 200 200"
+   version="1.1"
+   id="svg1"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient2">
+      <stop
+         style="stop-color:#9f75b3;stop-opacity:1;"
+         offset="0"
+         id="stop2" />
+      <stop
+         style="stop-color:#b37c75;stop-opacity:0.88612098;"
+         offset="1"
+         id="stop3" />
+    </linearGradient>
+    <radialGradient
+       xlink:href="#linearGradient2"
+       id="radialGradient3"
+       cx="107.65295"
+       cy="143.91902"
+       fx="107.65295"
+       fy="143.91902"
+       r="35.50761"
+       gradientTransform="matrix(1,0,0,0.17932801,-3.8174807,81.716994)"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <ellipse
+     style="fill:url(#radialGradient3);fill-opacity:1;stroke:#000000;stroke-width:0.264583"
+     id="path2"
+     cx="103.83546"
+     cy="107.5257"
+     rx="35.37532"
+     ry="6.235218" />
+  <g
+     id="layer1">
+    <path
+       style="fill:#b3a375;stroke:#000000;stroke-width:0.213414"
+       d="m 34.038155,107.6212 138.032325,-0.49649 c 0,0 -23.91675,28.63131 -66.95692,28.7968 -43.040169,0.1655 -71.075405,-28.30031 -71.075405,-28.30031 z"
+       id="path1" />
+    <path
+       style="fill:#fa330a;fill-opacity:0.588235;stroke:#000000;stroke-width:0.146176"
+       d="m 103.43454,91.430874 c 0,0 -7.038531,-2.40994 -7.038531,-21.87481 0,-19.464868 7.465111,-10.566641 7.891691,-22.430943 0.42658,-11.864301 -2.77276,-18.167212 -2.77276,-18.167212 0,0 9.598,9.268986 7.78504,16.498795 -1.81295,7.229809 -5.22557,20.39177 -9.384711,25.76778 -4.15913,5.37601 3.732561,18.16721 3.519271,20.20639 z"
+       id="path3" />
+    <rect
+       style="fill:#828282;fill-opacity:1;stroke:#000000;stroke-width:0.264583"
+       id="rect4"
+       width="73.804626"
+       height="5.8534703"
+       x="64.133675"
+       y="145.31877" />
+    <ellipse
+       style="fill:#828282;fill-opacity:1;stroke:#000000;stroke-width:0.264583"
+       id="path4"
+       cx="54.589973"
+       cy="147.86375"
+       rx="14.888175"
+       ry="7.3804626" />
+  </g>
+</svg>

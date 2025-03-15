@@ -17,6 +17,7 @@ import (
 // Items
 // overcooker/examples/gui/art/onion_chopped_64x64.png
 // overcooker/examples/gui/art/onion_raw_64x64.png
+// overcooker/examples/gui/art/onion_soup_64x64.png
 // Stations
 // overcooker/examples/gui/art/station_onion_64x64.png
 // overcooker/examples/gui/art/station_chop_64x64.png
@@ -40,12 +41,12 @@ type Game struct {
 // Update is called every tick (1/60 [s] by default).
 func (g *Game) Update() error {
 
-	env := g.Environment
+	// env := g.Environment
 
 	// Gather actions for each agent based on their policies
-	actions_list := make([]int, len(env.Agents))
-	prevPos := make([]ov.Position, len(env.Agents))
-	for i, agent := range env.Agents {
+	actions_list := make([]int, len(g.Environment.Agents))
+	prevPos := make([]ov.Position, len(g.Environment.Agents))
+	for i, agent := range g.Environment.Agents {
 		pos := ov.Position{X: agent.X, Y: agent.Y}
 		prevPos[i] = pos
 		policy := g.PolicyMap[pos]
@@ -53,7 +54,7 @@ func (g *Game) Update() error {
 	}
 
 	// Apply actions
-	rewards, done := env.Step(actions_list)
+	rewards, done := g.Environment.Step(actions_list)
 	fmt.Println("Rewards:", rewards)
 	fmt.Println("Done:", done)
 	// if done {
@@ -61,7 +62,7 @@ func (g *Game) Update() error {
 	// }
 
 	// update policy based on rewards
-	for i, agent := range env.Agents {
+	for i, agent := range g.Environment.Agents {
 		agentAction := actions_list[i]
 		agentReward := rewards[i]
 		agentPos := ov.Position{X: agent.X, Y: agent.Y}
@@ -95,12 +96,12 @@ func (g *Game) Update() error {
 	// early on, spawn some items
 	// every 15th step, spawn some items
 	if g.Step < 1000 && g.Step%15 == 0 {
-		env.EnvironmentSpawnRandomItemsForTraining()
+		g.Environment.EnvironmentSpawnRandomItemsForTraining()
 	}
 
 	// Display current state
 	fmt.Printf("\nStep %d:\n", g.Step)
-	env.Render()
+	g.Environment.Render()
 
 	g.Step++
 
@@ -170,7 +171,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				case ov.ItemOnionChopped:
 					screen.DrawImage(g.Images["onion_chopped_64x64.png"], op)
 				case ov.ItemSoup:
-					//No image for soup
+					screen.DrawImage(g.Images["onion_soup_64x64.png"], op)
 				}
 			}
 		}
@@ -233,6 +234,7 @@ func (g *Game) loadImages() error {
 		// items
 		"examples/gui/art/onion_chopped_64x64.png",
 		"examples/gui/art/onion_raw_64x64.png",
+		"examples/gui/art/onion_soup_64x64.png",
 		// stations
 		"examples/gui/art/station_chop_64x64.png",
 		"examples/gui/art/station_cook_64x64.png",
@@ -271,7 +273,7 @@ func main() {
 
 	env := game.Environment
 	game.Step = 1
-	game.MaxSteps = 1000
+	game.MaxSteps = 5000
 
 	game.PolicyMap = ov.NewPolicyMap(env)
 
