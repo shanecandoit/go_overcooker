@@ -29,6 +29,9 @@ func SimpleEnvironment() Environment {
 		Agents: []Agent{
 			{Name: "a1", X: 1, Y: 1},
 			{Name: "a2", X: 1, Y: 4},
+			{Name: "a3", X: 1, Y: 4},
+			{Name: "a4", X: 1, Y: 4},
+			{Name: "a5", X: 1, Y: 4},
 		},
 	}
 

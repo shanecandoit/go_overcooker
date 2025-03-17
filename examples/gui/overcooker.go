@@ -6,6 +6,7 @@ import (
 	_ "image/png"
 	"log"
 	"os"
+	"time"
 
 	ov "github.com/shanecandoit/go_overcooker/pkg/overcooker"
 
@@ -110,6 +111,9 @@ func (g *Game) Update() error {
 		return fmt.Errorf("Max steps reached")
 	}
 
+	// limit the speed
+	time.Sleep(100 * time.Millisecond)
+
 	return nil
 }
 
@@ -184,7 +188,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		// ebitenutil.DebugPrintAt(screen, "A", x*64, y*64)
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(float64(x*64), float64(y*64))
-		switch i {
+		switch i % 2 {
 		case 0:
 			screen.DrawImage(g.Images["chef-1_64x64.png"], op)
 		case 1:
